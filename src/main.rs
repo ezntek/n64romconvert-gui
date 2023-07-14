@@ -1,0 +1,3 @@
+mod window;
+
+fn main() {}
