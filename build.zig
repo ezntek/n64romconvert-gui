@@ -52,11 +52,12 @@ pub fn build(b: *std.Build) void {
         "qobject",
         "qpaintdevice",
         "qmainwindow",
-        "qboxlayout",
+        "qgridlayout",
         "qlineedit",
         "qlabel",
         "qlayout",
         "qcombobox",
+        "qlayoutitem",
     };
 
     const system_libs = [_][]const u8{ "Qt6Core", "Qt6Gui", "Qt6Widgets" };
