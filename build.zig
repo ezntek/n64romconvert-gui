@@ -3,7 +3,7 @@ const std = @import("std");
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const enable_workaround = b.option(bool, "enable-workaround", "Enable workaround for missing Qt C++ headers") orelse false;
     // Standard target options allows the person running `zig build` to choose
     // what target to build for. Here we do not override the defaults, which
@@ -41,34 +41,27 @@ pub fn build(b: *std.Build) void {
         .root_module = exe_mod,
     });
 
-    const libs = [_][]const u8{
-        "qapplication",
-        "qwidget",
-        "qpushbutton",
-        "qabstractbutton",
-        "qcoreapplication",
-        "qcoreevent",
-        "qguiapplication",
-        "qobject",
-        "qpaintdevice",
-        "qmainwindow",
-        "qgridlayout",
-        "qlineedit",
-        "qlabel",
-        "qlayout",
-        "qcombobox",
-        "qlayoutitem",
-    };
+    var arena = std.heap.ArenaAllocator.init(b.allocator);
+    const alloc = arena.allocator();
+    defer arena.deinit();
+    var libs: std.ArrayListUnmanaged([]const u8) = .empty;
+    const file = try std.fs.cwd().openFile("qtlibs", .{ .mode = .read_only });
+
+    while (try file.reader().readUntilDelimiterOrEofAlloc(alloc, '\n', 32768)) |line| {
+        if (std.mem.startsWith(u8, line, "#"))
+            continue;
+
+        try libs.append(alloc, try alloc.dupe(u8, line));
+    }
 
     const system_libs = [_][]const u8{ "Qt6Core", "Qt6Gui", "Qt6Widgets" };
-
     exe.root_module.addImport("libqt6zig", qt6zig.module("libqt6zig"));
 
     for (system_libs) |lib| {
         exe.root_module.linkSystemLibrary(lib, .{});
     }
 
-    for (libs) |lib| {
+    for (libs.items) |lib| {
         exe.root_module.linkLibrary(qt6zig.artifact(lib));
     }
 

@@ -26,8 +26,8 @@ pub const MainWindowUi = struct {
     btm_confirm_pushbutton: C.QPushButton,
 };
 
-pub fn newMainWindowUi(alloc: std.mem.Allocator) !*MainWindowUi {
-    const self = try alloc.create(MainWindowUi);
+pub fn newMainWindowUi(alloc: std.mem.Allocator) *MainWindowUi {
+    const self = alloc.create(MainWindowUi) catch panic();
 
     self.main_window = qt6.qmainwindow.New2() orelse panic();
     self.central_widget = qt6.qwidget.New(self.main_window) orelse panic();
