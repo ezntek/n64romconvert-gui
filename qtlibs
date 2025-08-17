@@ -15,3 +15,6 @@ qlayout
 qcombobox
 qlayoutitem
 qvariant
+qdialog
+qfiledialog
+qdialogbuttonbox
